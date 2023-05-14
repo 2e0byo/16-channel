@@ -1,0 +1,27 @@
+{
+    "lib_search_paths": {
+        "spice": [
+            "."
+        ],
+        "skidl": [
+            ".",
+            "/home/john/code/16-channel/.venv/lib/python3.11/site-packages/skidl/libs"
+        ],
+        "kicad": [
+            ".",
+            "/home/john/src/kicad-symbols/"
+        ]
+    },
+    "footprint_search_paths": {
+        "spice": [
+            "/home/john/.config/kicad"
+        ],
+        "skidl": [
+            "/home/john/.config/kicad"
+        ],
+        "kicad": [
+            "/home/john/.config/kicad/7.0"
+        ]
+    },
+    "default_tool": "kicad"
+}
