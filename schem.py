@@ -84,7 +84,7 @@ def channel() -> Part:
     )
     lower_pad = upper_pad.copy()
     backemf_diode = Part("easyeda", "S5DC-13-F", footprint="D_SMC")
-    mosfet = Part("easyeda", "AOD508", footprint="TO-252-3_TabPin2")
+    mosfet = Part("easyeda", "AOD508", footprint="TO-252-3_L6.5-W5.8-P4.58-BR")
 
     HV & upper_pad & backemf_diode["K,A"] & lower_pad & mosfet["D,S"] & GND_PWR
     pulldown = R("100K", ref="channel_pulldown")
