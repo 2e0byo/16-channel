@@ -1,0 +1,3 @@
+ERC WARNING: Merging two named nets (GND and Switch) into GND.
+ERC WARNING: Merging two named nets (E and GND_PWR) into E.
+ERC WARNING: Merging two named nets (GND and E) into GND.
