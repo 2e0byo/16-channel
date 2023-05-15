@@ -69,7 +69,7 @@ def connections(pin):
 
 def channel() -> Part:
     inr = R("100R", ref="channel_in")
-    driver = Part("Driver_FET", "ZXGD3003E6")
+    driver = Part("Driver_FET", "ZXGD3003E6", footprint="SOT-23-6")
     driver["IN1"] += driver["IN2"]
     driver["SOURCE"] += driver["SINK"]
     driver["GND"] += GND_PWR
@@ -95,7 +95,7 @@ def channel() -> Part:
 
 
 def buffer(not_oe):
-    nor = Part("74xx", "74HC04")
+    nor = Part("74xx", "74HC04", footprint="SOIC-14_3.9x8.7mm_P1.27mm")
     nor["GND"] += GND
     nor["VCC"] += THREE_V
     # unused
@@ -115,7 +115,7 @@ def buffer(not_oe):
 
 @module
 def led_driver():
-    driver = Part("Driver_LED", "PCA9685PW")
+    driver = Part("Driver_LED", "PCA9685PW", footprint="TSSOP-28_8x9.7mm_P0.65mm")
     driver["A0, A2, A4, VDD"] += FIVE_V
     driver["A1, A3, A5, EXTCLK, VSS"] += GND
     decoupling = C("100n")
@@ -158,7 +158,7 @@ def power_in():
 
 @module
 def regulator():
-    reg = Part("Regulator_Linear", "AMS1117-3.3")
+    reg = Part("Regulator_Linear", "AMS1117-3.3", footprint="SOT-89-3")
     reg["GND"] += GND
     reg["VI"] += FIVE_V
     reg["VI"] & C("22u") & GND
@@ -169,7 +169,9 @@ def regulator():
 
 @module
 def UI():
-    lcd = Part("Connector_Generic", "Conn_01x16")
+    lcd = Part(
+        "Connector_Generic", "Conn_01x16", footprint="PinHeader_1x16_P2.54mm_Vertical"
+    )
     lcd[:] += NC
     pins = "VSS VDD VO RS RW E D0 D1 D2 D3 D4 D5 D6 D7 A K"
     for i, pin in enumerate(pins.split()):
@@ -184,7 +186,9 @@ def UI():
     for net, name in ((n, n.name) for n in buses["LCD"] if n.name != "Backlight"):
         lcd[name] += net
 
-    Switch = Part("Switch", "SW_Push", dest=TEMPLATE)
+    Switch = Part(
+        "Switch", "SW_Push", dest=TEMPLATE, footprint="KEY-SMD_L6.2-W3.6-LS8.0"
+    )
     boot, enable = Switch(2)
     boot[1] += GND
     boot[2] & C("100n") & GND
@@ -193,7 +197,11 @@ def UI():
     enable[2] & C("100n") & GND
     enable[2] += buses["MCU_CTL"]["EN"]
 
-    encoder = Part("Device", "Rotary_Encoder_Switch")
+    encoder = Part(
+        "Device",
+        "Rotary_Encoder_Switch",
+        footprint="RotaryEncoder_Bourns_Horizontal_PEC12R-2xxxF-Sxxxx",
+    )
     encoder["C, S2"] += GND
     for p in {"A", "B", "S1"}:
         encoder[p] & R("100K") & THREE_V
@@ -204,7 +212,9 @@ def UI():
 
 @module
 def monitoring():
-    temperature = Part("easyeda", "LM75AD")
+    temperature = Part(
+        "easyeda", "LM75AD", footprint="SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm"
+    )
     temperature["A0, A1, A2, GND"] += GND
     temperature["VCC"] += THREE_V
     temperature["VCC"] & C("100n") & GND
@@ -212,7 +222,11 @@ def monitoring():
     for p in {"SCL", "SDA"}:
         temperature[p] += buses["I2C"][p]
 
-    current_sensor = Part("easyeda", "ACS71240LLCBTR-030B3")
+    current_sensor = Part(
+        "easyeda",
+        "ACS71240LLCBTR-030B3",
+        footprint="SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm",
+    )
     current_sensor["VCC"] += THREE_V
     current_sensor["VCC"] & C("100n") & GND
     current_sensor["GND"] += GND
@@ -224,7 +238,9 @@ def monitoring():
     # scale for full range on the +ve side and filter
 
     # generic lm358 clone; low bandwidth op amps fine here
-    op_amp = Part("easyeda", "AP358SG-13")
+    op_amp = Part(
+        "easyeda", "AP358SG-13", footprint="SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm"
+    )
     op_amp["GND"] += GND
     op_amp["VCC"] += FIVE_V  # give it some headroom
     op_amp["VCC"] & C("1u") & GND
@@ -239,7 +255,7 @@ def monitoring():
     op_amp["IN1+"] & C("100n") & GND
     op_amp["IN1+"] & R("12K") & current_sensor["VIOUT"]
 
-    adc = Part("Analog_ADC", "MCP3201")
+    adc = Part("Analog_ADC", "MCP3201", footprint="SOP-8_3.9x4.9mm_P1.27mm")
     adc["Vdd", "Vref"] += THREE_V
     adc["Vdd"] & C("100n") & GND
     adc["Vss, IN-"] += GND
@@ -252,7 +268,7 @@ def monitoring():
 
 @module
 def usb():
-    socket = Part("easyeda", "YTC-TC16S-26")
+    socket = Part("easyeda", "YTC-TC16S-26", footprint="USB-C-SMD_YTC-TC16S-26-A")
     socket["GND"] += GND
     mounting_pins = socket[12, 13, 14, 15]
     mounting_pins += GND
@@ -264,14 +280,20 @@ def usb():
     d_minus = socket["DN1, DN2"]
     vbus = socket["VBUS"]
 
-    clamp_diodes = Part("easyeda", "RCLAMP7534P-N")
+    clamp_diodes = Part(
+        "easyeda", "RCLAMP7534P-N", footprint="DFN2010-5L_L2.0-W1.0-P0.8-BL"
+    )
     clamp_diodes["GND"] += GND
     clamp_diodes[5] += d_plus
     clamp_diodes[4] += d_minus
     clamp_diodes[1] += vbus
     clamp_diodes[3] += NC
 
-    interface = Part("Interface_USB", "CP2102N-A01-GQFN28")
+    interface = Part(
+        "Interface_USB",
+        "CP2102N-A01-GQFN28",
+        footprint="QFN-28_L5.0-W5.0-P0.50-TL-EP3.3",
+    )
     interface[:] += NC
     interface["GND"] += GND
     interface["VDD, REGIN"] += THREE_V
@@ -314,7 +336,7 @@ class Interface:
 
 @module
 def mcu():
-    soc = Part("RF_Module", "ESP32-WROOM-32D")
+    soc = Part("RF_Module", "ESP32-WROOM-32D", footprint="ESP32-WROOM-32D")
     soc["GND"] += GND
     soc["VDD"] += THREE_V
     decoupling = C("22u") | C("100n")
@@ -397,7 +419,9 @@ def mcu():
 
 @module
 def io():
-    i2c_out = Part("Connector", "Conn_01x04_Male")
+    i2c_out = Part(
+        "Connector", "Conn_01x04_Male", footprint="PinHeader_1x04_P2.54mm_Vertical"
+    )
     # skidl slice is inclusive...
     i2c_out[1:2] += [THREE_V, GND]
     i2c_out[3:] += buses["I2C"]
