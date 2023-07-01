@@ -1,4 +1,5 @@
 from skidl import *
+from firmware.hal import hal
 
 # skidl_cfg.store()
 
@@ -319,21 +320,6 @@ def usb():
     q2["B"] & R("10K") & interface["~RTS"]
 
 
-class Interface:
-    """An interface resistor, mostly in case of rework."""
-
-    def __init__(self, name: str, value: str = "10R"):
-        self.name = name
-        self.value = value
-        self._r = None
-
-    @property
-    def r(self):
-        if not self._r:
-            self._r = R(self.value, ref=self.name)
-        return self._r
-
-
 @module
 def mcu():
     soc = Part("RF_Module", "ESP32-WROOM-32D", footprint="ESP32-WROOM-32D")
@@ -344,42 +330,6 @@ def mcu():
     soc["SENSOR_VP"].aliases += "IO36"
     soc["SENSOR_VN"].aliases += "IO39"
     soc["NC"] += NC
-
-    hal = {
-        "LCD": {
-            "IO32": Interface("VO"),
-            "IO33": Interface("RS"),
-            "IO25": Interface("E"),
-            "IO26": Interface("D4"),
-            "IO27": Interface("D5"),
-            "IO14": Interface("D6"),
-            "IO13": Interface("D7"),
-            "IO4": Interface("Backlight", "2K"),
-        },
-        "I2C": {
-            "IO22": Interface("SDA"),
-            "IO21": Interface("SCL"),
-        },
-        "SHUTOFF": dict(IO23=Interface("OE")),
-        "ATX_CTL": {"IO16": Interface("PWR_ON")},
-        "MCU_CTL": {
-            "TXD0/IO1": Interface("TXD"),
-            "RXD0/IO3": Interface("RXD"),
-            "IO0": Interface("IO0"),
-            "EN": Interface("EN"),
-        },
-        "IO": {
-            "IO34": Interface("R1"),
-            "IO35": Interface("R2"),
-            "IO36": Interface("Switch"),
-        },
-        "SPI": {
-            "IO18": Interface("MISO"),
-            "IO5": Interface("CLK"),
-            "IO17": Interface("CS"),
-        },
-        "PINS": {"IO2": Interface("Status", "2K")},
-    }
 
     no_erc = {"EN"}
     for bus, conns in hal.items():
