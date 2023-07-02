@@ -1,6 +1,7 @@
 from hal import static_hal
-from machine import Pin, SPI, I2C, UART
+from machine import Pin, SPI, I2C, SoftI2C, UART
 import hal
+from pca9685 import PCA9685
 
 
 def make_spi(**mapping):
@@ -16,8 +17,18 @@ def make_spi(**mapping):
     )
 
 
+_i2c = 0
+
+
 def make_i2c(**mapping):
-    return I2C(scl=translate_pin(mapping["SCL"]), sda=translate_pin(mapping["SDA"]))
+    global _i2c
+    scl, sda = translate_pin(mapping["SCL"]), translate_pin(mapping["SDA"])
+    try:
+        i2c = I2C(_i2c, scl=scl, sda=sda)
+        _i2c += 1
+    except ValueError:
+        i2c = SoftI2C(scl=scl, sda=sda)
+    return i2c
 
 
 def translate_pin(pin: hal.Pin) -> Pin:
@@ -53,3 +64,6 @@ def psu(state: "bool | None" = None) -> bool:
     elif state is not None:
         p.init(p.IN)
     return not p.value()
+
+
+controller = PCA9685(buses["I2C"])

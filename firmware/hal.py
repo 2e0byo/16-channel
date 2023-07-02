@@ -1,8 +1,14 @@
+from collections import namedtuple
+
+Pin = namedtuple("Pin", ("name", "input"))
+
+
 class Interface:
-    def __init__(self, name: str, series_r: str = "10R"):
+    def __init__(self, name: str, series_r: str = "10R", input=False):
         self.name = name
         self.value = series_r
         self._r = None
+        self.input = input
 
     @property
     def r(self):
@@ -29,7 +35,7 @@ hal = {
         "IO21": Interface("SCL"),
     },
     "SHUTOFF": dict(IO23=Interface("OE")),
-    "ATX_CTL": {"IO16": Interface("PWR_ON")},
+    "ATX_CTL": {"IO16": Interface("PWR_ON", input=True)},
     "MCU_CTL": {
         "TXD0/IO1": Interface("TXD"),
         "RXD0/IO3": Interface("RXD"),
@@ -37,9 +43,9 @@ hal = {
         "EN": Interface("EN"),
     },
     "IO": {
-        "IO34": Interface("R1"),
-        "IO35": Interface("R2"),
-        "IO36": Interface("Switch"),
+        "IO34": Interface("R1", input=True),
+        "IO35": Interface("R2", input=True),
+        "IO36": Interface("Switch", input=True),
     },
     "SPI": {
         "IO18": Interface("MISO"),
@@ -54,7 +60,7 @@ def _as_dict(d: "dict[str, Interface] | dict[str, dict]"):
     resolved = {}
     for k, v in d.items():
         if isinstance(v, Interface):
-            resolved[k] = v.name
+            resolved[v.name] = Pin(k, v.input)
         elif isinstance(v, dict):
             resolved[k] = _as_dict(v)
         else:
