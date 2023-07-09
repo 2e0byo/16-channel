@@ -36,7 +36,8 @@ class RPC:
 
     def parse(self, raw_data: str) -> dict:
         try:
-            data = json.loads(raw_data)
+            data = {"kwargs": {}, "args": ()}
+            data.update(json.loads(raw_data))
         except Exception as e:
             raise ParseError() from e
         return data

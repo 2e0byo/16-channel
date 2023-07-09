@@ -108,6 +108,39 @@ def test_positional_params(rpc):
     rpc.methods["foo"].assert_called_once_with(1, 2, 3)
 
 
+def test_missing_params(rpc):
+    rpc.methods["foo"].return_value = 17
+    request = dumps({"jsonrpc": "2.0", "method": "foo", "id": 1})
+    assert loads(rpc.handle_packet(request)) == {
+        "jsonrpc": "2.0",
+        "result": 17,
+        "id": 1,
+    }
+    rpc.methods["foo"].assert_called_once_with()
+
+
+def test_empty_positional_params(rpc):
+    rpc.methods["foo"].return_value = 17
+    request = dumps({"jsonrpc": "2.0", "method": "foo", "params": [], "id": 1})
+    assert loads(rpc.handle_packet(request)) == {
+        "jsonrpc": "2.0",
+        "result": 17,
+        "id": 1,
+    }
+    rpc.methods["foo"].assert_called_once_with()
+
+
+def test_empty_named_params(rpc):
+    rpc.methods["foo"].return_value = 17
+    request = dumps({"jsonrpc": "2.0", "method": "foo", "params": {}, "id": 1})
+    assert loads(rpc.handle_packet(request)) == {
+        "jsonrpc": "2.0",
+        "result": 17,
+        "id": 1,
+    }
+    rpc.methods["foo"].assert_called_once_with()
+
+
 def test_named_params(rpc):
     rpc.methods["foo"].return_value = 19
     request = dumps(
