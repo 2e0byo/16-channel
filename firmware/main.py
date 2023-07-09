@@ -1,6 +1,13 @@
 from interface import controller, psu
 from time import sleep
 from jsonrpc import RPC
+from machine import UART
+import sys
+
+try:
+    import asyncio
+except ImportError:
+    import uasyncio as asyncio
 
 psu(True)
 
@@ -40,4 +47,25 @@ rpc = RPC(
     }
 )
 
-# rpc serial listener
+
+reader = asyncio.StreamReader(sys.stdin)
+writer = asyncio.StreamWriter(sys.stdout)
+
+
+async def main():
+    try:
+        while True:
+            data = (await reader.readline()).decode()
+            if not data.strip():
+                continue
+            resp = rpc.handle_packet(data)
+            if resp:
+                writer.write(resp.encode() + b"\n")
+                await writer.drain()
+    except Exception as e:
+        print("Error", e)
+    finally:
+        print("leaving loop")
+
+
+asyncio.run(main())
