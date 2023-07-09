@@ -10,7 +10,8 @@ all: .mirror/main.lock
 .mirror/hal.lock:
 .mirror/pca9685.lock:
 .mirror/interface.lock: .mirror/hal.lock .mirror/pca9685.lock
-.mirror/main.lock: .mirror/hal.lock .mirror/interface.lock
+.mirror/jsonrpc.lock:
+.mirror/main.lock: .mirror/hal.lock .mirror/interface.lock .mirror/jsonrpc.lock
 
 clean:
 	rm -f .mirror/*.lock
