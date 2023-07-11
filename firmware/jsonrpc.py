@@ -106,6 +106,6 @@ class RPC:
         except Exception as e:
             return self.error(e)
 
-    def handle_packet(self, packet: str):
+    def handle_packet(self, packet: str) -> str:
         resp = self._handle_packet(packet)
         return json.dumps(resp) if resp else None

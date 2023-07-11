@@ -1,13 +1,22 @@
-from interface import controller, psu
-from time import sleep
-from jsonrpc import RPC
-from machine import UART
 import sys
+from random import getrandbits
+from time import sleep
+
+from machine import UART
+
+uart = UART(0)
+
+from interface import controller, psu
+from jsonrpc import RPC
 
 try:
     import asyncio
 except ImportError:
     import uasyncio as asyncio
+
+from conn import auto_reconnect, do_connect, network_status
+
+auto_reconnect()
 
 psu(True)
 
@@ -39,11 +48,18 @@ def channel_count() -> int:
     return len(controller.channels)
 
 
+REPL_SECRET = f"DROP_TO_REPL:{getrandbits(32)}"
+
 rpc = RPC(
     {
         "get_brightness": get_brightness,
         "set_brightness": set_brightness,
         "channel_count": channel_count,
+        "frequency": controller.frequency,
+        "max_brightness": lambda: 4095,
+        "wifi_connect": do_connect,
+        "wifi_status": network_status,
+        "repl": lambda: REPL_SECRET,
     }
 )
 
@@ -54,18 +70,30 @@ writer = asyncio.StreamWriter(sys.stdout)
 
 async def main():
     try:
-        while True:
+        uart.init(460800)
+        cancelled = False
+        while not cancelled:
             data = (await reader.readline()).decode()
             if not data.strip():
                 continue
             resp = rpc.handle_packet(data)
+            if REPL_SECRET in resp:
+                cancelled = True
+                import json
+
+                data = json.loads(resp)
+                data["result"] = "Dropping to repl."
+                resp = json.dumps(data)
             if resp:
                 writer.write(resp.encode() + b"\n")
                 await writer.drain()
     except Exception as e:
         print("Error", e)
     finally:
+        uart.init(115200)
         print("leaving loop")
 
 
 asyncio.run(main())
+
+print("out of loop")
